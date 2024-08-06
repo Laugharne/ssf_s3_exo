@@ -14,6 +14,7 @@ Topics in this exercice :
 - Rust
 - Anchor
 - PDA
+- init_if_needed
 - CPI
 - ATA creation
 - Token transfer
@@ -26,3 +27,4 @@ Topics in this exercice :
 - CPI code for transferring tokens: https://github.com/solana-developers/program-examples/blob/main/tokens/transfer-tokens/anchor/programs/transfer-tokens/src/instructions/transfer.rs (Very handy)
 - [Transferring SOL and building a payment splitter: &quot;msg.value&quot; in Solana](https://www.rareskills.io/post/anchor-transfer-sol)
 - [Cross Program Invocation in Anchor](https://www.rareskills.io/post/cross-program-invocation)
+- [PDA (Program Derived Address) vs Keypair Account in Solana](https://www.rareskills.io/post/solana-pda)
