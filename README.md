@@ -19,6 +19,9 @@ Topics in this exercice :
 - ATA creation
 - Token transfer
 
+zz _node; solana-test-validator --reset
+anchor test --skip-local-validator
+
 ## Resources
 - Learn about CPIs: https://solana.com/docs/core/cpi (Important)
 - Overview of Anchor: https://www.anchor-lang.com/docs/high-level-overview

@@ -3,7 +3,19 @@ import { Program } from "@coral-xyz/anchor";
 import { Vault } from "../target/types/vault";
 import { expect } from "chai";
 import { publicKey } from "@coral-xyz/anchor/dist/cjs/utils";
+import { Connection, Keypair, SystemProgram, Transaction } from "@solana/web3.js";
 
+import {
+  createMint,
+  getAccount,
+  getOrCreateAssociatedTokenAccount,
+  mintTo,
+  mintToChecked,
+  setAuthority,
+  transfer,
+  burn,
+  approve
+} from '@solana/spl-token';
 
 // this airdrops sol to an address
 async function airdropSol(publicKey, amount) {
@@ -27,9 +39,9 @@ async function createAccounts(nn: number, amount: number) {
   for( i=0; i<nn; i++) {
     let account = anchor.web3.Keypair.generate();
     await airdropSol(account.publicKey, amount);
-    console.log(i+" "+account.publicKey.toString());
+    console.log("    "+i+" "+account.publicKey.toString());
     // const balance = await anchor.getProvider().connection.getBalance(account.publicKey);
-    // console.log("Balance:", balance / anchor.web3.LAMPORTS_PER_SOL, "SOL");
+    // console.log("    Balance:", balance / anchor.web3.LAMPORTS_PER_SOL, "SOL");
     accounts.push(account);
   }
   return accounts;
@@ -37,21 +49,87 @@ async function createAccounts(nn: number, amount: number) {
 
 describe("vault", () => {
   // Configure the client to use the local cluster.
-  anchor.setProvider(anchor.AnchorProvider.env());
+  const provider = anchor.AnchorProvider.env();
+  anchor.setProvider(provider);
 
   const program = anchor.workspace.Vault as Program<Vault>;
-  
+  let connection: anchor.web3.Connection;
+  connection = provider.connection;//new Connection("http://localhost:8899");
+
   let accounts   : any[];
   let walletAlice: anchor.web3.Signer;
+  let mintAlice;
+  let ataAlice;
+  let amountAlice = 2;
+
   let walletBob  : anchor.web3.Signer;
+  let mintBob;
+  let ataBob;
+
+  const decimals = 0;
 
   it("Is initialized!", async () => {
-
+    //const providerWallet = provider.wallet;
+  
     //create TWO accounts with 2 SOL of balance
-    accounts    = await createAccounts(2, 2);
+    accounts    = await createAccounts(2, 3);
     walletAlice = accounts[0];
     walletBob   = accounts[1];
-  
+
+    // mint account
+    try {
+      mintAlice = await createMint(
+        connection      ,   // connection
+        walletAlice           ,   // fee payer
+        walletAlice.publicKey,    // mint authority
+        null           ,    // freeze authority (you can use `null` to disable it. when you disable it, you can't turn it on again)
+        decimals       ,    // decimals
+      );
+    } catch(err) {
+      console.log(err);
+    }
+    console.log("    mint Alice", mintAlice.toBase58());
+
+    // ATA
+    try {
+      ataAlice = await getOrCreateAssociatedTokenAccount(
+      connection,
+      walletAlice,
+      mintAlice,
+      walletAlice.publicKey
+    );
+    } catch(err) {
+      console.log(err);
+    }
+    console.log("    ATA Alice", ataAlice.address.toBase58());
+
+    // MINT
+    try {
+      let mintTx = await mintTo(
+        connection            ,            // connection
+        walletAlice           ,            // payer
+        mintAlice             ,            // mint
+        ataAlice.address     ,             // destination
+        walletAlice.publicKey ,            // authority
+        amountAlice                        // amount
+      );
+      console.log('    Mint Transaction:', mintTx);
+
+      await setAuthority(
+        connection,
+        walletAlice           ,   // Payer of the transaction fees
+        mintAlice             ,   // Account 
+        walletAlice.publicKey,    // Current authority 
+        0                     ,   // Authority type: "0" represents Mint Tokens 
+        null                 ,    // Setting the new Authority to null
+      );
+      console.log('    Authority is set for Alice !');
+
+    } catch(err) {
+      console.log(err);
+    }
+
+
     //const tx = await program.methods.initialize().rpc();
     //console.log("Your transaction signature", tx);
   });
