@@ -61,7 +61,7 @@ describe("vault", () => {
   let walletAlice: anchor.web3.Signer;
   let mintAlice;
   let ataAlice;
-  let amountAlice = 2;
+  let amountAlice = 6;
 
   let walletBob  : anchor.web3.Signer;
   let mintBob;
@@ -72,9 +72,8 @@ describe("vault", () => {
   it("Is initialized!", async () => {
     //const providerWallet = provider.wallet;
 
-
     //create TWO accounts with 2 SOL of balance
-    accounts    = await createAccounts(2, 3);
+    accounts    = await createAccounts(2, 10);
     walletAlice = accounts[0];
     walletBob   = accounts[1];
 
@@ -178,7 +177,7 @@ describe("vault", () => {
 
   it("deposit(): multiple deposit on one unique vault", async () => {
 
-    const pda = await getVaultPda( program, "SSF_VAULT", walletAlice, mintAlice);
+    const pda = await getVaultPda( program, "SSF_VAULT", mintAlice);
     //const pda = await getVaultPda( program, "SSF_VAULT", walletAlice, ataAlice);
 
     let [tokenAccountOwnerPda] = PublicKey.findProgramAddressSync(
@@ -224,7 +223,7 @@ describe("vault", () => {
 async function getVaultPda(
   program: anchor.Program<Vault>,
   tag    : String,
-  wallet : anchor.web3.Signer,
+  //wallet : anchor.web3.Signer,
   //tokenAccount
   mintAccount
 
@@ -235,7 +234,7 @@ async function getVaultPda(
       Buffer.from(tag),
       mintAccount.toBuffer(),
       //tokenAccount.address.toBuffer(),
-      wallet.publicKey.toBuffer(),
+      //wallet.publicKey.toBuffer(),
     ],
     program.programId
   );
