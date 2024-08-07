@@ -1,6 +1,7 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { Vault } from "../target/types/vault";
+import { PublicKey } from "@solana/web3.js";
 import { expect } from "chai";
 import { publicKey } from "@coral-xyz/anchor/dist/cjs/utils";
 import { Connection, Keypair, SystemProgram, Transaction } from "@solana/web3.js";
@@ -70,7 +71,8 @@ describe("vault", () => {
 
   it("Is initialized!", async () => {
     //const providerWallet = provider.wallet;
-  
+
+
     //create TWO accounts with 2 SOL of balance
     accounts    = await createAccounts(2, 3);
     walletAlice = accounts[0];
@@ -102,6 +104,9 @@ describe("vault", () => {
       console.log(err);
     }
     console.log("    ATA Alice", ataAlice.address.toBase58());
+    //console.log(ataAlice.toBuffer());
+    //console.log(ataAlice.publicKey.toBuffer());
+    //console.log(ataAlice.address.toBuffer());
 
     // MINT
     try {
@@ -118,16 +123,52 @@ describe("vault", () => {
       await setAuthority(
         connection,
         walletAlice           ,   // Payer of the transaction fees
-        mintAlice             ,   // Account 
-        walletAlice.publicKey,    // Current authority 
-        0                     ,   // Authority type: "0" represents Mint Tokens 
+        mintAlice             ,   // Account
+        walletAlice.publicKey,    // Current authority
+        0                     ,   // Authority type: "0" represents Mint Tokens
         null                 ,    // Setting the new Authority to null
       );
       console.log('    Authority is set for Alice !');
 
+      const tokenAccountInfo = await getAccount(
+        connection,
+        ataAlice.address
+      );
+
+      const balanceToken = tokenAccountInfo.amount / BigInt(Math.pow(10, decimals));
+      console.log("    "+balanceToken);
+
     } catch(err) {
       console.log(err);
     }
+
+    //***
+    let [tokenAccountOwnerPda] = PublicKey.findProgramAddressSync(
+      [Buffer.from("SSF_VAULT_ATA")],
+      program.programId
+    );
+    console.log("    TokenAccountOwnerPda: " + tokenAccountOwnerPda);
+
+    let confirmOptions = {
+      skipPreflight: true,
+    };
+
+    try {
+      let initVaultTx = await program.methods
+        .initialize()
+        .accounts({
+          tokenAccountOwnerPda: tokenAccountOwnerPda,
+          signer              : program.provider.publicKey,
+        })
+        .rpc(confirmOptions);
+
+      await logTransaction(connection, initVaultTx);
+      //***
+
+  } catch(err) {
+    console.log(err);
+  }
+
 
 
     //const tx = await program.methods.initialize().rpc();
@@ -137,14 +178,23 @@ describe("vault", () => {
 
   it("deposit(): multiple deposit on one unique vault", async () => {
 
-    const pda = await getVaultPda( program, "SSF_VAULT", walletAlice);
+    const pda = await getVaultPda( program, "SSF_VAULT", walletAlice, mintAlice);
+    //const pda = await getVaultPda( program, "SSF_VAULT", walletAlice, ataAlice);
+
+    let [tokenAccountOwnerPda] = PublicKey.findProgramAddressSync(
+      [Buffer.from("SSF_VAULT_ATA")],
+      program.programId
+    );
 
     let tx = await program.methods.deposit(
       new anchor.BN(3)
     ).accounts( {
-      vault: pda.pubkey,
-      signer: walletAlice.publicKey,
-      systemProgram: anchor.web3.SystemProgram.programId,
+      tokenAccountOwnerPda: tokenAccountOwnerPda,
+      vault               : pda.pubkey,
+      signer              : walletAlice.publicKey,
+      mintAccount         : mintAlice,
+      senderTokenAccount  : ataAlice.address,
+      systemProgram       : anchor.web3.SystemProgram.programId,
     })
     .signers([walletAlice])
     .rpc();
@@ -154,9 +204,12 @@ describe("vault", () => {
     tx = await program.methods.deposit(
       new anchor.BN(2)
     ).accounts( {
-      vault        : pda.pubkey,
-      signer       : walletAlice.publicKey,
-      systemProgram: anchor.web3.SystemProgram.programId,
+      tokenAccountOwnerPda: tokenAccountOwnerPda,
+      vault               : pda.pubkey,
+      signer              : walletAlice.publicKey,
+      mintAccount         : mintAlice,
+      senderTokenAccount  : ataAlice.address,
+      systemProgram       : anchor.web3.SystemProgram.programId,
     })
     .signers([walletAlice])
     .rpc();
@@ -165,33 +218,23 @@ describe("vault", () => {
 
   });
 
-  it("withdraw(): withdraw of an unique wallet to its owner", async () => {
-    const pda = await getVaultPda( program, "SSF_VAULT", walletAlice);
-
-    let tx = await program.methods.withdraw(
-    ).accounts( {
-      vault        : pda.pubkey,
-      signer       : walletAlice.publicKey,
-      systemProgram: anchor.web3.SystemProgram.programId,
-    })
-    .signers([walletAlice])
-    .rpc();
-    console.log("    (withdraw) https://solana.fm/tx/"+tx);
-    console.log("");
-  });
-
 });
+
 
 async function getVaultPda(
   program: anchor.Program<Vault>,
   tag    : String,
-  wallet : anchor.web3.Signer
+  wallet : anchor.web3.Signer,
+  //tokenAccount
+  mintAccount
 
 ) {
 
   const [pubKey, bump] = await anchor.web3.PublicKey.findProgramAddress(
     [
       Buffer.from(tag),
+      mintAccount.toBuffer(),
+      //tokenAccount.address.toBuffer(),
       wallet.publicKey.toBuffer(),
     ],
     program.programId
@@ -203,4 +246,22 @@ async function getVaultPda(
   };
 
   return pda;
+}
+
+
+async function logTransaction(connection, txHash) {
+  const { blockhash, lastValidBlockHeight } =
+  await connection.getLatestBlockhash();
+  //await program.provider.connection.getLatestBlockhash();
+
+  await connection.confirmTransaction({
+  // await program.provider.connection.confirmTransaction({
+      blockhash,
+    lastValidBlockHeight,
+    signature: txHash,
+  });
+
+  console.log(
+    `    https://explorer.solana.com/tx/${txHash}`
+  );
 }

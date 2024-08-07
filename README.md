@@ -31,3 +31,4 @@ anchor test --skip-local-validator
 - [Transferring SOL and building a payment splitter: &quot;msg.value&quot; in Solana](https://www.rareskills.io/post/anchor-transfer-sol)
 - [Cross Program Invocation in Anchor](https://www.rareskills.io/post/cross-program-invocation)
 - [PDA (Program Derived Address) vs Keypair Account in Solana](https://www.rareskills.io/post/solana-pda)
+- [Solana Playground| Spl Token Vault](https://beta.solpg.io/tutorials/spl-token-vault)
