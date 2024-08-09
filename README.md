@@ -6,6 +6,10 @@
 
 **On devnet : [Solana Explorer Link](https://solana.fm/address/8uot8k7km7RtdkxFfXGG2nrRd8CxAG4p2SNJ5sSpmQaz/transactions?cluster=devnet-solana)**
 
+--------
+
+## Deployment
+
 **Changing the cluster environnement**
 
 ```bash
