@@ -202,11 +202,11 @@ rustc 1.75.0
 ```
 
 ## Resources
-- Learn about CPIs: https://solana.com/docs/core/cpi (Important)
-- Overview of Anchor: https://www.anchor-lang.com/docs/high-level-overview
-- More about PDAs: https://solanacookbook.com/core-concepts/pdas.html#facts
-- Slides: https://pitch.com/v/anchor-dudz4a
-- CPI code for transferring tokens: https://github.com/solana-developers/program-examples/blob/main/tokens/transfer-tokens/anchor/programs/transfer-tokens/src/instructions/transfer.rs (Very handy)
+- [Cross Program Invocation (CPI) | Solana](https://solana.com/docs/core/cpi)
+- [Anchor : High-level Overview - Docs](https://www.anchor-lang.com/docs/high-level-overview)
+- [Program Derived Addresses (PDAs) | Solana Cookbook](https://solanacookbook.com/core-concepts/pdas.html#facts)
+- [Slides : Anchor](https://pitch.com/v/anchor-dudz4a)
+- [CPI code for transferring tokens](https://github.com/solana-developers/program-examples/blob/main/tokens/transfer-tokens/anchor/programs/transfer-tokens/src/instructions/transfer.rs)
 - [Transferring SOL and building a payment splitter: &quot;msg.value&quot; in Solana](https://www.rareskills.io/post/anchor-transfer-sol)
 - [Cross Program Invocation in Anchor](https://www.rareskills.io/post/cross-program-invocation)
 - [PDA (Program Derived Address) vs Keypair Account in Solana](https://www.rareskills.io/post/solana-pda)
