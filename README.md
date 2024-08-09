@@ -2,7 +2,43 @@
 
 ## Deployed program
 
-**devnet : [Link TODO]()**
+**Program Id:** `8uot8k7km7RtdkxFfXGG2nrRd8CxAG4p2SNJ5sSpmQaz`
+
+**On devnet : [Solana Explorer Link](https://solana.fm/address/8uot8k7km7RtdkxFfXGG2nrRd8CxAG4p2SNJ5sSpmQaz/transactions?cluster=localnet-solana)**
+
+**Changing the cluster environnement**
+```bash
+solana config set --url devnet
+```
+
+**Create and set wallet if needed**
+```bash
+solana-keygen new --outfile ~/.config/solana/devnet.json
+solana config set --keypair ~/.config/solana/devnet.json
+solana airdrop 2
+```
+
+**Update : Anchor.toml**
+```toml
+[programs.devnet]
+my_program = "8uot8k7km7RtdkxFfXGG2nrRd8CxAG4p2SNJ5sSpmQaz"
+
+[provider]
+cluster = "devnet"
+wallet = "~/.config/solana/devnet.json"
+# cluster = "Localnet"
+# wallet = "~/.config/solana/id.json"
+```
+
+**Build and deploy**
+```bash
+anchor build
+anchor deploy
+```
+
+>**Program Id:** 8uot8k7km7RtdkxFfXGG2nrRd8CxAG4p2SNJ5sSpmQaz
+>
+> Deploy success
 
 
 ## Overview
@@ -19,6 +55,7 @@ Topics in this exercice :
 - CPI
 - ATA creation
 - Token transfer
+- Build & deploy on devnet
 
 ### Components
 
